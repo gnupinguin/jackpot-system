@@ -1,11 +1,12 @@
 package io.gnupinguin.sporty.interview.async;
 
+import io.gnupinguin.sporty.interview.async.events.BetEvent;
 import io.gnupinguin.sporty.interview.persistence.repository.BetRepository;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotContributionRepository;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRepository;
-import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -17,18 +18,9 @@ public class EventProcessor {
     private final JackpotRepository jackpotRepository;
     private final JackpotContributionRepository jackpotContributionRepository;
 
-    public void processEvent(@Nonnull BetEvent event) {
-        //todo check user id
+    @KafkaListener(topics = "jackpot-bets", containerFactory = "kafkaListenerContainerFactory")
+    public void processEvent(BetEvent event) {
         log.info("Processing bet event: {}", event);
-//        var jackpotHolder = jackpotRepository.findById(event.jackpotId());
-//        if (jackpotHolder.isPresent()) {
-//            var jackpot = jackpotHolder.get();
-//
-//        } else {
-//            log.warn("Jackpot with id {} not found", event.jackpotId());
-//        }
-
-
     }
 
 }

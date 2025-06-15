@@ -15,7 +15,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-jetty")
 
-//    implementation("org.springframework.boot:spring-boot-starter-kafka")
+    implementation("org.springframework.kafka:spring-kafka:3.3.6")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.data:spring-data-jdbc")
     implementation("com.h2database:h2:2.3.232")
@@ -25,6 +25,7 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
 
+    testImplementation("org.springframework.kafka:spring-kafka-test:3.3.6")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.projectlombok:lombok:1.18.32")

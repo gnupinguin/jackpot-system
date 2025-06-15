@@ -17,7 +17,7 @@ public class BetEndpoint {
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void make(@RequestBody BetResource request) {
-        //todo: validate request
+        log.info("Publishing bet request: {}", request);
         betPublisher.publishAsync(request);
     }
 

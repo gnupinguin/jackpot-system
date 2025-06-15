@@ -30,7 +30,6 @@ public class UserEndpoint {
         return ResponseEntity.ok(saved);
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         if (repository.existsById(id)) {
