@@ -1,10 +1,11 @@
 package io.gnupinguin.sporty.interview.async;
 
+import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.rest.BetResource;
 import jakarta.annotation.Nonnull;
 
 public interface BetPublisher {
 
-    void publishAsync(@Nonnull BetResource betResource);
+    void publishAsync(@Nonnull Bet bet);
 
 }
