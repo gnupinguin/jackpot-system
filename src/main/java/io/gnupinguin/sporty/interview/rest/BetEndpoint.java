@@ -7,6 +7,7 @@ import io.gnupinguin.sporty.interview.persistence.repository.ExtendedJackpotRepo
 import io.gnupinguin.sporty.interview.rest.resource.BetRequest;
 import io.gnupinguin.sporty.interview.rest.resource.BetResource;
 import io.gnupinguin.sporty.interview.rest.resource.RewardResource;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class BetEndpoint {
     private final ExtendedJackpotRepository jackpotRepository;
     private final BetPublisher publisher;
 
-    @PostMapping("place")
+    @PostMapping("")
     @Transactional
     public ResponseEntity<BetResource> place(@RequestBody BetRequest request) {
         //TODO: validate request
@@ -42,8 +43,8 @@ public class BetEndpoint {
         }
     }
 
-    @PostMapping("check-reward")
-    public ResponseEntity<RewardResource> check(@RequestParam("betId") Long betId) {
+    @GetMapping("{betId}/reward")
+    public ResponseEntity<RewardResource> reward(@PathParam("betId") Long betId) {
         log.info("Check reward for bet with ID: {}", betId);
         var rewardResource = jackpotRepository.findRewardedBetByBetId(betId)
                 .map(r -> {

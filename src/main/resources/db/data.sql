@@ -35,7 +35,7 @@ INSERT INTO "jackpot_rule_param" (rule_id, param_name, param_value)
 VALUES
   (4, 'max_chance', 1.0),
   (4, 'increase_rate', 0.0005),
-  (4, 'trigger_pool', 2000.00);
+  (4, 'trigger_pool', 20000.00);
 
 -- Jackpot 1: Starter Jackpot (contribution rule 1, reward rule 3)
 INSERT INTO "jackpot" (

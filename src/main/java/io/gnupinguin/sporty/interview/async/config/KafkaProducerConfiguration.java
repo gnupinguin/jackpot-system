@@ -26,7 +26,6 @@ public class KafkaProducerConfiguration {
                 ProducerConfig.RETRIES_CONFIG, properties.producer().retries(),
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG, properties.producer().retryBackoffMs(),
                 ProducerConfig.BATCH_SIZE_CONFIG, properties.producer().batchSize(),
-                ProducerConfig.LINGER_MS_CONFIG, properties.producer().lingerMs(),
                 ProducerConfig.MAX_BLOCK_MS_CONFIG, properties.producer().maxBlockMs(),
                 ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip",
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,

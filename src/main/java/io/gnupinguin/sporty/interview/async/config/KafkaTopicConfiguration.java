@@ -12,9 +12,4 @@ public class KafkaTopicConfiguration {
         return new NewTopic(properties.jackpotBetsTopic(), 1, (short) 1);
     }
 
-    @Bean
-    public NewTopic jackpotBetRedeliveryTopic(KafkaProperties properties) {
-        return new NewTopic(properties.jackpotBetsRedeliveryTopic(), 1, (short) 1);
-    }
-
 }

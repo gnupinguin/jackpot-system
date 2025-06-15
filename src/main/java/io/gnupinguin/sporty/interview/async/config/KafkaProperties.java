@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record KafkaProperties(
         String bootstrapServers,
         String jackpotBetsTopic,
-        String jackpotBetsRedeliveryTopic,
         KafkaConsumerProperties consumer,
         KafkaProducerProperties producer) {
     public record KafkaConsumerProperties(
@@ -18,7 +17,6 @@ public record KafkaProperties(
             int retries,
             int retryBackoffMs,
             int batchSize,
-            int lingerMs,
             int maxBlockMs) {
     }
 }

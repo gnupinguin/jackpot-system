@@ -1,7 +1,6 @@
 server:
     port: 8080
-    servlet:
-        context-path: /api
+
 spring:
   datasource:
     url: jdbc:h2:mem:jackpotdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -24,22 +23,9 @@ spring:
     console:
       enabled: true
       path: /h2-console
-#  kafka:
-#    bootstrap-servers: localhost:9092
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-#    consumer:
-#      group-id: my-group
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-#      properties:
-#        spring.json.trusted.packages: "io.gnupinguin.sporty.interview.async.events"
 kafka:
   bootstrap-servers: localhost:9092
   jackpotBetsTopic: jackpot-bets
-  jackpotBetsRedeliveryTopic: jackpot-bets-redelivery
-  jackpotRewardsTopic: jackpot-rewards
   consumer:
     processingThreads: 10
     groupId: app-group
@@ -47,7 +33,6 @@ kafka:
     retries: 3
     retryBackoffMs: 1000
     batchSize: 16384
-    lingerMs: 1
     maxBlockMs: 60000
 
 springdoc:
