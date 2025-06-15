@@ -18,6 +18,8 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka:3.3.6")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.data:spring-data-jdbc")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
     implementation("com.h2database:h2:2.3.232")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")

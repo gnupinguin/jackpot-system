@@ -17,15 +17,17 @@ VALUES ('CONTRIBUTION', 'VARIABLE', 'Variable Contribution Rule', NOW()); -- id 
 INSERT INTO "jackpot_rule" (type, strategy, name, created_at)
 VALUES ('REWARD', 'FIXED', 'Reward Rule', NOW()); -- id = 3
 
--- For Contribution Rule 1 (id = 1)
-INSERT INTO "jackpot_rule_param" (rule_id, "key", "value")
-VALUES (1, 'fixed_amount', 10.00);
+-- For Contribution Rule 1 (id = 1) fixed
+INSERT INTO "jackpot_rule_param" (rule_id, param_name, param_value)
+VALUES (1, 'rate', 0.05); -- 5% contribution
 
--- For Contribution Rule 2 (id = 2)
-INSERT INTO "jackpot_rule_param" (rule_id, "key", "value")
-VALUES (2, 'percentage', 5.00),
-       (2, 'min_amount', 2.00);
-
+-- For Contribution Rule 2 (id = 2) variable
+INSERT INTO "jackpot_rule_param" (rule_id, param_name, param_value)
+VALUES
+  (2, 'initial_rate', 0.10),     -- 10%
+  (2, 'min_rate', 0.02),         -- 2%
+  (2, 'decrease_step', 1000),    -- every 1000 in pool
+  (2, 'decrease_rate', 0.005);   -- decrease by 0.5%
 
 -- Starter Jackpot with Contribution Rule 1 and Reward Rule 3
 INSERT INTO "jackpot" (

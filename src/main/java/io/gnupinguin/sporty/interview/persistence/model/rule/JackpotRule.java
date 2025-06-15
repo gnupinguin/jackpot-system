@@ -5,13 +5,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Table(name = "jackpot_rule")
 public record JackpotRule(
         @Id Long id,
-        JackpotRuleType type,         // CONTRIBUTION or REWARD
-        RuleStrategy strategy,        // FIXED or VARIABLE
+        JackpotRuleType type,
+        RuleStrategy strategy,
         String name,
         Instant createdAt
 ) {}

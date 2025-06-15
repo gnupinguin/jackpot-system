@@ -5,7 +5,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 @Table("jackpot_contribution")
 public record JackpotContribution(

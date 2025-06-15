@@ -2,11 +2,11 @@ package io.gnupinguin.sporty.interview.rest;
 import io.gnupinguin.sporty.interview.async.BetPublisher;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.repository.BetRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Clock;
@@ -25,6 +25,7 @@ public class BetEndpoint {
     @PostMapping
     @Transactional
     public Bet place(@RequestBody BetResource request) {
+        //TODO: validate request
         log.info("Place bet request: {}", request);
         try {
             var bet = repository.save(new Bet(null, request.userId(), request.jackpotId(), request.amount(), clock.instant()));

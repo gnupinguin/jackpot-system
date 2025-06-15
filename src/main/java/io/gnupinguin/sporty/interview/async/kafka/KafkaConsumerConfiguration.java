@@ -16,22 +16,21 @@ import java.util.Map;
 public class KafkaConsumerConfiguration {
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> cf) {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ConsumerFactory<String, Object> cf, KafkaProperties properties) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
         factory.setConsumerFactory(cf);
-        factory.setConcurrency(20); //TODO: make configurable
+        factory.setConcurrency(properties.consumer().processingThreads());
         return factory;
     }
 
     @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
+    public ConsumerFactory<String, Object> consumerFactory(KafkaProperties properties) {
         JsonDeserializer<Object> deserializer = new JsonDeserializer<>();
         deserializer.addTrustedPackages(BetEvent.class.getPackageName());
 
         Map<String, Object> props = Map.of(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-                ConsumerConfig.GROUP_ID_CONFIG, "app-group", //TODO: make configurable
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers(),
+                ConsumerConfig.GROUP_ID_CONFIG, properties.consumer().groupId(),
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer
         );

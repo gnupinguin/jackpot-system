@@ -35,6 +35,19 @@ spring:
 #      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 #      properties:
 #        spring.json.trusted.packages: "io.gnupinguin.sporty.interview.async.events"
+kafka:
+  bootstrap-servers: localhost:9092
+  jackpotBetsTopic: jackpot-bets
+  jackpotBetsRedeliveryTopic: jackpot-bets-redelivery
+  consumer:
+    processingThreads: 10
+    groupId: app-group
+  producer:
+    retries: 3
+    retryBackoffMs: 1000
+    batchSize: 16384
+    lingerMs: 1
+    maxBlockMs: 60000
 
 springdoc:
   swagger-ui:

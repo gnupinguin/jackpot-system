@@ -8,4 +8,5 @@ public interface BetPublisher {
 
     void publishAsync(@Nonnull Bet bet);
 
+    void redelivery(long betId, @Nonnull String reason);
 }

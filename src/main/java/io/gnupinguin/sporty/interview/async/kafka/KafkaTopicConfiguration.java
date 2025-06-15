@@ -8,8 +8,13 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaTopicConfiguration {
 
     @Bean
-    public NewTopic jackpotBetTopic() { //TODO only for test purposes, remove in production
-        return new NewTopic("jackpot-bets", 1, (short) 1);
+    public NewTopic jackpotBetTopic(KafkaProperties properties) { //TODO only for test purposes, remove in production
+        return new NewTopic(properties.jackpotBetsTopic(), 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic jackpotBetRedeliveryTopic(KafkaProperties properties) {
+        return new NewTopic(properties.jackpotBetsRedeliveryTopic(), 1, (short) 1);
     }
 
 }
