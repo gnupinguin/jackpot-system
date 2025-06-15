@@ -1,6 +1,5 @@
-package io.gnupinguin.sporty.interview.async.processor.contribution;
+package io.gnupinguin.sporty.interview.processor.contribution;
 
-import io.gnupinguin.sporty.interview.async.processor.AbstractJackpotRuleProcessor;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
@@ -8,6 +7,7 @@ import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
 import jakarta.annotation.Nonnull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,15 +15,14 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.util.Map;
 
+import static io.gnupinguin.sporty.interview.processor.JackpotRuleProcessorHelper.requireParam;
+
 @Service
-public class VariableRuleContributor extends AbstractJackpotRuleProcessor implements JackpotRuleContributor {
+@RequiredArgsConstructor
+public class VariableRuleContributor implements JackpotRuleContributor {
 
     private final Clock clock;
-
-    public VariableRuleContributor(JackpotRuleParamRepository ruleParamRepository, Clock clock) {
-        super(ruleParamRepository);
-        this.clock = clock;
-    }
+    private final JackpotRuleParamRepository ruleParamRepository;
 
     @Nonnull
     @Override
@@ -34,7 +33,7 @@ public class VariableRuleContributor extends AbstractJackpotRuleProcessor implem
     @Nonnull
     @Override
     public JackpotContribution contribute(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
-        var variableRule = loadRule(rule, VariableRule::fromParams);
+        var variableRule = VariableRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
 
         var currentPoolAmount = jackpot.currentPoolAmount();
         var steps = currentPoolAmount.divide(variableRule.decreaseStep(), 0, RoundingMode.DOWN);

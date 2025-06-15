@@ -56,11 +56,3 @@ INSERT INTO "jackpot" (
     'Mega Jackpot', 5000.00, 5000.00,
     2, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
-
--- Bets (4 total)
-INSERT INTO "bet" (user_id, jackpot_id, amount, created_at)
-VALUES
-  (1, 1, 10000.00, CURRENT_TIMESTAMP),  -- Alice on Starter Jackpot
-  (2, 1, 200.00, CURRENT_TIMESTAMP),    -- Bob on Starter Jackpot
-  (1, 2, 300.00, CURRENT_TIMESTAMP),    -- Alice on Mega Jackpot
-  (2, 2, 400.00, CURRENT_TIMESTAMP);    -- Bob on Mega Jackpot

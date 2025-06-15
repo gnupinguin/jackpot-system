@@ -1,7 +1,6 @@
-package io.gnupinguin.sporty.interview.async.kafka;
+package io.gnupinguin.sporty.interview.async.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @ConfigurationProperties("kafka")
 public record KafkaProperties(

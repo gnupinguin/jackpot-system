@@ -1,6 +1,5 @@
-package io.gnupinguin.sporty.interview.async.processor.contribution;
+package io.gnupinguin.sporty.interview.processor.contribution;
 
-import io.gnupinguin.sporty.interview.async.processor.AbstractJackpotRuleProcessor;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
@@ -8,21 +7,21 @@ import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
 import jakarta.annotation.Nonnull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.Map;
 
+import static io.gnupinguin.sporty.interview.processor.JackpotRuleProcessorHelper.requireParam;
+
 @Service
-public class FixedRuleContributor extends AbstractJackpotRuleProcessor implements JackpotRuleContributor {
+@RequiredArgsConstructor
+public class FixedRuleContributor implements JackpotRuleContributor {
 
     private final Clock clock;
-
-    public FixedRuleContributor(JackpotRuleParamRepository ruleParamRepository, Clock clock) {
-        super(ruleParamRepository);
-        this.clock = clock;
-    }
+    private final JackpotRuleParamRepository ruleParamRepository;
 
     @Nonnull
     @Override
@@ -33,7 +32,7 @@ public class FixedRuleContributor extends AbstractJackpotRuleProcessor implement
     @Nonnull
     @Override
     public JackpotContribution contribute(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
-        var fixedRule = loadRule(rule, FixedRule::fromParams);
+        var fixedRule = FixedRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
         var contributionAmount = bet.amount().multiply(fixedRule.rate());
         var updatedJackpotPool = jackpot.currentPoolAmount().add(contributionAmount);
 
@@ -51,11 +50,7 @@ public class FixedRuleContributor extends AbstractJackpotRuleProcessor implement
 
     private record FixedRule(BigDecimal rate) {
         static FixedRule fromParams(Map<String, BigDecimal> params) {
-            BigDecimal rate = params.get("rate");
-            if (rate == null) {
-                throw new IllegalArgumentException("Missing required parameter 'rate' for FIXED strategy"); //TODO handle this more gracefully
-            }
-            return new FixedRule(rate);
+            return new FixedRule(requireParam(params, "rate"));
         }
     }
 }

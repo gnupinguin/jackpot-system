@@ -1,18 +1,19 @@
-package io.gnupinguin.sporty.interview.async.processor.contribution;
+package io.gnupinguin.sporty.interview.processor.reward;
 
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
-import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
-public interface JackpotRuleContributor {
+public interface JackpotRuleRewarder {
 
     @Nonnull
     RuleStrategy getStrategy();
 
-    @Nonnull
-    JackpotContribution contribute(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet);
+    @Nullable
+    JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet);
 
 }

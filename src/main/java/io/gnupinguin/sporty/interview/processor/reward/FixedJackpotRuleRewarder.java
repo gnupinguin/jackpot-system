@@ -1,33 +1,30 @@
-package io.gnupinguin.sporty.interview.async.processor.reward;
+package io.gnupinguin.sporty.interview.processor.reward;
 
-import io.gnupinguin.sporty.interview.async.processor.AbstractJackpotRuleProcessor;
+import io.gnupinguin.sporty.interview.common.ChanceGenerator;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
+import io.gnupinguin.sporty.interview.processor.JackpotRuleProcessorHelper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.Map;
-import java.util.Random;
+
 
 @Service
-public class FixedJackpotRuleRewarder extends AbstractJackpotRuleProcessor implements JackpotRuleRewarder {
+@RequiredArgsConstructor
+public class FixedJackpotRuleRewarder implements JackpotRuleRewarder {
 
-    private static final Random random = new SecureRandom(); // use thread-safe or inject for testability
-
-    private final Clock clock; // use system clock or inject for testability
-
-    public FixedJackpotRuleRewarder(JackpotRuleParamRepository ruleParamRepository, Clock clock, JackpotRuleParamRepository ruleParamRepository1) {
-        super(ruleParamRepository);
-        this.clock = clock;
-    }
+    private final Clock clock;
+    private final ChanceGenerator chanceGenerator;
+    private final JackpotRuleParamRepository ruleParamRepository;
 
     @Nonnull
     @Override
@@ -38,9 +35,9 @@ public class FixedJackpotRuleRewarder extends AbstractJackpotRuleProcessor imple
     @Nullable
     @Override
     public JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
-        FixedRule fixedRule = loadRule(rule, FixedRule::fromParams);
+        var fixedRule = FixedRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
 
-        if (random.nextDouble() > fixedRule.chance().doubleValue()) {
+        if (!chanceGenerator.won(fixedRule.chance)) {
             return null;
         }
 
@@ -58,11 +55,8 @@ public class FixedJackpotRuleRewarder extends AbstractJackpotRuleProcessor imple
 
     private record FixedRule(BigDecimal chance) {
         static FixedRule fromParams(Map<String, BigDecimal> params) {
-            BigDecimal chance = params.get("chance");
-            if (chance == null) {
-                throw new IllegalArgumentException("Missing required parameter 'chance' for FIXED reward rule");
-            }
-            return new FixedRule(chance);
+            return new FixedRule(JackpotRuleProcessorHelper.requireParam(params, "chance"));
         }
     }
+
 }

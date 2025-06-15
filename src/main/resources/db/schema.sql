@@ -38,6 +38,7 @@ CREATE TABLE "bet" (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL REFERENCES "user"(id),
     jackpot_id BIGINT NOT NULL REFERENCES "jackpot"(id),
+    processed BOOLEAN NOT NULL DEFAULT FALSE,
     amount DECIMAL(18, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL
 );
@@ -64,5 +65,5 @@ CREATE TABLE "jackpot_reward" (
     reward_amount DECIMAL(18, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL
 );
-ALTER TABLE "jackpot_reward" ADD CONSTRAINT uq_jackpot_reward UNIQUE (jackpot_id);
+ALTER TABLE "jackpot_reward" ADD CONSTRAINT uq_bet_id UNIQUE (bet_id);
 

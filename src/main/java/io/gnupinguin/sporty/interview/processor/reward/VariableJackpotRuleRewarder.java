@@ -1,6 +1,6 @@
-package io.gnupinguin.sporty.interview.async.processor.reward;
+package io.gnupinguin.sporty.interview.processor.reward;
 
-import io.gnupinguin.sporty.interview.async.processor.AbstractJackpotRuleProcessor;
+import io.gnupinguin.sporty.interview.common.ChanceGenerator;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
@@ -9,25 +9,23 @@ import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.security.SecureRandom;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Map;
-import java.util.Random;
+
+import static io.gnupinguin.sporty.interview.processor.JackpotRuleProcessorHelper.requireParam;
 
 @Service
-public class VariableJackpotRuleRewarder extends AbstractJackpotRuleProcessor implements JackpotRuleRewarder {
+@RequiredArgsConstructor
+public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
 
     private final Clock clock;
-    private static final Random random = new SecureRandom();
+    private final ChanceGenerator chanceGenerator;
+    private final JackpotRuleParamRepository ruleParamRepository;
 
-    public VariableJackpotRuleRewarder(JackpotRuleParamRepository ruleParamRepository, Clock clock) {
-        super(ruleParamRepository);
-        this.clock = clock;
-    }
 
     @Nonnull
     @Override
@@ -38,7 +36,7 @@ public class VariableJackpotRuleRewarder extends AbstractJackpotRuleProcessor im
     @Nullable
     @Override
     public JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
-        VariableRule ruleParams = loadRule(rule, VariableRule::fromParams);
+        VariableRule ruleParams = VariableRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
 
         BigDecimal currentPool = jackpot.currentPoolAmount();
         BigDecimal triggerPool = ruleParams.triggerPool();
@@ -56,7 +54,7 @@ public class VariableJackpotRuleRewarder extends AbstractJackpotRuleProcessor im
             }
         }
 
-        if (random.nextDouble() > chance.doubleValue()) {
+        if (!chanceGenerator.won(chance)) {
             return null;
         }
 
@@ -66,15 +64,14 @@ public class VariableJackpotRuleRewarder extends AbstractJackpotRuleProcessor im
                 bet.userId(),
                 jackpot.id(),
                 currentPool,
-                Instant.now(clock)
+                clock.instant()
         );
     }
 
     private record VariableRule(
             BigDecimal maxChance,
             BigDecimal increaseRate,
-            BigDecimal triggerPool
-    ) {
+            BigDecimal triggerPool) {
         static VariableRule fromParams(Map<String, BigDecimal> params) {
             return new VariableRule(
                     requireParam(params, "max_chance"),

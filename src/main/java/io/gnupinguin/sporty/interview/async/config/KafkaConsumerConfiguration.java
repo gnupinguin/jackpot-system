@@ -1,4 +1,4 @@
-package io.gnupinguin.sporty.interview.async.kafka;
+package io.gnupinguin.sporty.interview.async.config;
 
 import io.gnupinguin.sporty.interview.async.events.BetEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

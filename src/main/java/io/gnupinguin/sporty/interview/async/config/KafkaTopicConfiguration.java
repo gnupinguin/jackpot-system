@@ -1,4 +1,4 @@
-package io.gnupinguin.sporty.interview.async.kafka;
+package io.gnupinguin.sporty.interview.async.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;

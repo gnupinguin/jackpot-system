@@ -1,16 +1,17 @@
 package io.gnupinguin.sporty.interview.async;
 
+import io.gnupinguin.sporty.interview.async.config.KafkaProperties;
 import io.gnupinguin.sporty.interview.async.events.BetEvent;
-import io.gnupinguin.sporty.interview.async.events.BetRedeliveryEvent;
-import io.gnupinguin.sporty.interview.async.kafka.KafkaProperties;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KafkaBetPublisher implements BetPublisher {
@@ -20,12 +21,14 @@ public class KafkaBetPublisher implements BetPublisher {
 
     @Override
     public void publishAsync(@Nonnull Bet bet) {
-        producer.send(kafkaProperties.jackpotBetsTopic(), new BetEvent(getEventId(), bet.id()));
+        var event = new BetEvent(getEventId(), bet.id());
+        producer.send(kafkaProperties.jackpotBetsTopic(), String.valueOf(bet.jackpotId()), event);
     }
 
     @Override
     public void redelivery(long betId, @Nonnull String reason) {
-        producer.send(kafkaProperties.jackpotBetsRedeliveryTopic(), new BetRedeliveryEvent(getEventId(), betId, reason));
+        //TODO
+        log.info("[MOCK] Redelivering bet with ID: {}. Reason: {}", betId, reason);
     }
 
     @Nonnull
