@@ -1,0 +1,35 @@
+server:
+    port: 8080
+    servlet:
+        context-path: /api
+spring:
+  datasource:
+    url: jdbc:h2:mem:jackpotdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      pool-name: HikariCP
+      connection-timeout: 20000
+      max-lifetime: 1800000
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+springdoc:
+  swagger-ui:
+    path: /test/ui
+
+logging:
+  level:
+    root: INFO
+    org.springframework.jdbc.core: DEBUG
