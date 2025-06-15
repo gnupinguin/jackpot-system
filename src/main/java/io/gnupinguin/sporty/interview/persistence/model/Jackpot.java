@@ -15,5 +15,4 @@ public record Jackpot(
         long contributionRuleId,
         long rewardRuleId,
         Instant createdAt,
-        Instant updatedAt
-) {}
+        Instant updatedAt) {}

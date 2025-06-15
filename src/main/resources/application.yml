@@ -39,6 +39,7 @@ kafka:
   bootstrap-servers: localhost:9092
   jackpotBetsTopic: jackpot-bets
   jackpotBetsRedeliveryTopic: jackpot-bets-redelivery
+  jackpotRewardsTopic: jackpot-rewards
   consumer:
     processingThreads: 10
     groupId: app-group

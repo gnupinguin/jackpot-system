@@ -1,4 +1,4 @@
-package io.gnupinguin.sporty.interview.async.processor;
+package io.gnupinguin.sporty.interview.async.processor.contribution;
 
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import jakarta.annotation.Nonnull;
@@ -22,7 +22,7 @@ public class JackpotRuleContributorProvider {
     public JackpotRuleContributor getContributor(RuleStrategy strategy) {
         var processor = processors.get(strategy);
         if (processor == null) {
-            throw new IllegalArgumentException("No processor found for strategy: " + strategy); //TODO handle this more gracefully
+            throw new IllegalArgumentException("No contributor found for strategy: " + strategy); //TODO handle this more gracefully
         }
         return processor;
     }

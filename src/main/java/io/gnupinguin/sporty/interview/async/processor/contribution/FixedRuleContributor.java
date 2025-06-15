@@ -1,5 +1,6 @@
-package io.gnupinguin.sporty.interview.async.processor;
+package io.gnupinguin.sporty.interview.async.processor.contribution;
 
+import io.gnupinguin.sporty.interview.async.processor.AbstractJackpotRuleProcessor;
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
@@ -8,14 +9,13 @@ import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
 import jakarta.annotation.Nonnull;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.Map;
 
 @Service
-public class FixedRuleContributor extends AbstractJackpotRuleContributor {
+public class FixedRuleContributor extends AbstractJackpotRuleProcessor implements JackpotRuleContributor {
 
     private final Clock clock;
 

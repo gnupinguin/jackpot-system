@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public abstract class AbstractJackpotRuleContributor implements JackpotRuleContributor {
+public abstract class AbstractJackpotRuleProcessor {
 
     private final JackpotRuleParamRepository ruleParamRepository;
 

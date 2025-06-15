@@ -1,4 +1,4 @@
-package io.gnupinguin.sporty.interview.async.processor;
+package io.gnupinguin.sporty.interview.async.processor.contribution;
 
 import io.gnupinguin.sporty.interview.persistence.model.Bet;
 import io.gnupinguin.sporty.interview.persistence.model.Jackpot;

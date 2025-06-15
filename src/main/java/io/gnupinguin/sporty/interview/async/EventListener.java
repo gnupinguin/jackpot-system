@@ -1,8 +1,7 @@
 package io.gnupinguin.sporty.interview.async;
 
 import io.gnupinguin.sporty.interview.async.events.BetEvent;
-import io.gnupinguin.sporty.interview.async.processor.JackpotRuleContributorProvider;
-import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
+import io.gnupinguin.sporty.interview.async.processor.contribution.JackpotRuleContributorProvider;
 import io.gnupinguin.sporty.interview.persistence.repository.BetRepository;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotContributionRepository;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRepository;
@@ -32,7 +31,7 @@ public class EventListener {
     private final JdbcTemplate jdbcTemplate;
     private final BetPublisher betPublisher;
 
-    @KafkaListener(topics = "jackpot-bets", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.jackpotBetsTopic}", containerFactory = "kafkaListenerContainerFactory")
     @Transactional
     public void listenEvent(BetEvent event) {
         try {
