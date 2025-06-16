@@ -1,9 +1,7 @@
 package io.gnupinguin.sporty.interview.persistence.repository;
 
 
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
 import io.gnupinguin.sporty.interview.persistence.model.RewardedBet;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,15 +17,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExtendedJackpotRepositoryImplTest {
-
-    @Mock
-    private JackpotRepository jackpotRepository;
-
     @Mock
     private JdbcTemplate jdbcTemplate;
 
@@ -37,64 +32,7 @@ class ExtendedJackpotRepositoryImplTest {
     @Captor
     private ArgumentCaptor<String> sqlCaptor;
 
-    private Jackpot jackpot;
     private final Instant now = Instant.parse("2025-06-13T12:00:00Z");
-
-    @BeforeEach
-    void setUp() {
-        jackpot = new Jackpot(
-                1L,
-                "Test Jackpot",
-                BigDecimal.valueOf(1000),
-                BigDecimal.valueOf(1200),
-                10L,
-                20L,
-                now,
-                now
-        );
-    }
-
-    @Test
-    void testReturnJackpotWhenFound() {
-        when(jdbcTemplate.queryForObject(anyString(), any(RowMapper.class), eq(1L)))
-                .thenReturn(jackpot);
-
-        Optional<Jackpot> result = repository.findForUpdate(1L);
-
-        assertTrue(result.isPresent());
-        assertEquals(jackpot, result.get());
-
-        verify(jdbcTemplate).queryForObject(sqlCaptor.capture(), any(RowMapper.class), eq(1L));
-        String actualSql = sqlCaptor.getValue();
-        assertEquals(minimizeQuery("""
-                        SELECT id, name, initial_pool_amount, current_pool_amount,
-                           contribution_rule_id, reward_rule_id, created_at, updated_at
-                        FROM "jackpot"
-                        WHERE id = ?
-                        FOR UPDATE
-                      """), minimizeQuery(actualSql));
-    }
-
-    @Test
-    void testFindForUpdateReturnEmptyWhenNotFound() {
-        when(jdbcTemplate.queryForObject(anyString(), any(RowMapper.class), eq(99L)))
-                .thenReturn(null);
-
-        Optional<Jackpot> result = repository.findForUpdate(99L);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void update_shouldDelegateToJpaRepository() {
-        when(jackpotRepository.save(jackpot)).thenReturn(jackpot);
-
-        Jackpot result = repository.update(jackpot);
-
-        assertNotNull(result);
-        assertEquals(jackpot, result);
-        verify(jackpotRepository).save(jackpot);
-    }
 
     @Test
     void findRewardedBetByBetId_shouldReturnRewardedBet_whenExists() {

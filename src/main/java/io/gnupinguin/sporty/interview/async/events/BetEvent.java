@@ -1,7 +1,4 @@
 package io.gnupinguin.sporty.interview.async.events;
 
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-
-public record BetEvent(String eventId, long betId) {
-
+public record BetEvent(String eventId, long betId, long jackpotId) {
 }

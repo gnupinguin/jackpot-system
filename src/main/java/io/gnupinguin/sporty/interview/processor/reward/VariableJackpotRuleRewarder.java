@@ -26,7 +26,6 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
     private final ChanceGenerator chanceGenerator;
     private final JackpotRuleParamRepository ruleParamRepository;
 
-
     @Nonnull
     @Override
     public RuleStrategy getStrategy() {
@@ -80,4 +79,5 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
             );
         }
     }
+
 }

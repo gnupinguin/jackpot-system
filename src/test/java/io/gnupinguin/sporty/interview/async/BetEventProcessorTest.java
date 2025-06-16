@@ -29,20 +29,19 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EventListenerTest {
+class BetEventProcessorTest {
 
     @Mock private BetRepository betRepository;
-    @Mock private ExtendedJackpotRepository jackpotRepository;
+    @Mock private JackpotRepository jackpotRepository;
     @Mock private JackpotRuleRepository ruleRepository;
     @Mock private JackpotContributionRepository contributionRepository;
     @Mock private JackpotRuleProcessorProvider ruleProcessorProvider;
     @Mock private JackpotRewardRepository rewardRepository;
-    @Mock private BetPublisher betPublisher;
 
     @Mock private JackpotRuleContributor contributor;
     @Mock private JackpotRuleRewarder rewarder;
 
-    @InjectMocks private EventListener listener;
+    @InjectMocks private BetEventProcessor listener;
 
     private final Instant now = Instant.parse("2025-06-13T12:00:00Z");
 
@@ -61,10 +60,10 @@ class EventListenerTest {
 
     @Test
     void testProcessContributionAndReward() {
-        BetEvent event = new BetEvent("uuid", bet.id());
+        BetEvent event = new BetEvent("uuid", bet.id(), jackpot.id());
 
         when(betRepository.findById(bet.id())).thenReturn(Optional.of(bet));
-        when(jackpotRepository.findForUpdate(bet.jackpotId())).thenReturn(Optional.of(jackpot));
+        when(jackpotRepository.findById(bet.jackpotId())).thenReturn(Optional.of(jackpot));
         when(ruleRepository.findAllGroupedByType(List.of(1L, 2L)))
                 .thenReturn(new JackpotRules(contributionRule, rewardRule));
 
@@ -77,36 +76,25 @@ class EventListenerTest {
         when(rewarder.reward(any(), any(), any()))
                 .thenReturn(new JackpotReward(null, bet.id(), bet.userId(), jackpot.id(), new BigDecimal("200.00"), now));
 
-        listener.listenEvent(event);
+        listener.process(event);
 
         verify(contributionRepository).save(any());
         verify(rewardRepository).save(any());
-        verify(jackpotRepository).update(any());
+        verify(jackpotRepository).save(any());
         verify(betRepository).save(argThat(Bet::processed));
-        verify(betPublisher, never()).redelivery(anyLong(), anyString());
     }
 
     @Test
     void testIgnoreAlreadyProcessedBet() {
-        BetEvent event = new BetEvent("uuid", bet.id());
+        BetEvent event = new BetEvent("uuid", bet.id(), jackpot.id());
         bet = bet.process();
 
         when(betRepository.findById(bet.id())).thenReturn(Optional.of(bet));
 
-        listener.listenEvent(event);
+        listener.process(event);
 
         verify(betRepository, never()).save(any());
         verifyNoInteractions(jackpotRepository, ruleRepository, contributionRepository, rewardRepository, ruleProcessorProvider);
-        verify(betPublisher, never()).redelivery(anyLong(), anyString());
-    }
-
-    @Test
-    void testHandleExceptionAndTriggerRedelivery() {
-        BetEvent event = new BetEvent("uuid", 1);
-
-        listener.listenEvent(event);
-
-        verify(betPublisher).redelivery(bet.id(),"Bet not found with ID: " + bet.id());
     }
 
 }
