@@ -41,7 +41,7 @@ class FixedRuleContributorTest {
         when(clock.instant()).thenReturn(now);
 
         var jackpot = new Jackpot(1L, "Starter", BigDecimal.TEN, new BigDecimal("1000.00"),
-                1L, 3L, now, now);
+                1L, 3L, now, 1);
         var rule = new JackpotRule(1L, JackpotRuleType.CONTRIBUTION, RuleStrategy.FIXED, "Fixed 5%", now);
         var bet = new Bet(101L, 1L, 1L, false, new BigDecimal("200.00"), now);
 
@@ -62,7 +62,7 @@ class FixedRuleContributorTest {
 
     @Test
     void shouldThrowWhenRateMissing() {
-        Jackpot jackpot = new Jackpot(1L, "Test", BigDecimal.TEN, BigDecimal.valueOf(1000), 1L, 3L, now, now);
+        Jackpot jackpot = new Jackpot(1L, "Test", BigDecimal.TEN, BigDecimal.valueOf(1000), 1L, 3L, now, 1);
         JackpotRule rule = new JackpotRule(1L, JackpotRuleType.CONTRIBUTION, RuleStrategy.FIXED, "Broken", now);
         Bet bet = new Bet(1L, 1L, 1L, false, BigDecimal.valueOf(100), now);
 
@@ -78,7 +78,7 @@ class FixedRuleContributorTest {
     void shouldHandleZeroRate() {
         when(clock.instant()).thenReturn(now);
 
-        Jackpot jackpot = new Jackpot(1L, "Jackpot", BigDecimal.TEN, BigDecimal.valueOf(999), 1L, 3L, now, now);
+        Jackpot jackpot = new Jackpot(1L, "Jackpot", BigDecimal.TEN, BigDecimal.valueOf(999), 1L, 3L, now, 1);
         JackpotRule rule = new JackpotRule(1L, JackpotRuleType.CONTRIBUTION, RuleStrategy.FIXED, "Zero", now);
         Bet bet = new Bet(1L, 1L, 1L, false, BigDecimal.valueOf(500), now);
 

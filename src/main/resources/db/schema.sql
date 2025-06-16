@@ -31,7 +31,8 @@ CREATE TABLE "jackpot" (
     reward_rule_id BIGINT NOT NULL REFERENCES "jackpot_rule"(id),
 
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    version BIGINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE "bet" (

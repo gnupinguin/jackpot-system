@@ -21,7 +21,7 @@ public class KafkaBetPublisher implements BetPublisher {
 
     @Override
     public void publishAsync(@Nonnull Bet bet) {
-        var event = new BetEvent(getEventId(), bet.id(), bet.jackpotId());
+        var event = new BetEvent(getEventId(), bet.id());
         producer.send(kafkaProperties.jackpotBetsTopic(), String.valueOf(bet.jackpotId()), event);
     }
 

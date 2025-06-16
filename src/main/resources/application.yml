@@ -27,7 +27,7 @@ kafka:
   bootstrap-servers: localhost:9092
   jackpotBetsTopic: jackpot-bets
   consumer:
-    processingThreads: 1
+    processingThreads: 10
     groupId: app-group
   producer:
     retries: 3

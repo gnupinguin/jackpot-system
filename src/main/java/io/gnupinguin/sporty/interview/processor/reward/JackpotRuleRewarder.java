@@ -1,7 +1,6 @@
 package io.gnupinguin.sporty.interview.processor.reward;
 
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
@@ -14,6 +13,6 @@ public interface JackpotRuleRewarder {
     RuleStrategy getStrategy();
 
     @Nullable
-    JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet);
+    JackpotReward reward(@Nonnull JackpotRule rule, @Nonnull JackpotContribution contribution);
 
 }

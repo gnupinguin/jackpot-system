@@ -1,8 +1,7 @@
 package io.gnupinguin.sporty.interview.processor.reward;
 
 import io.gnupinguin.sporty.interview.common.ChanceGenerator;
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
@@ -26,6 +25,7 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
     private final ChanceGenerator chanceGenerator;
     private final JackpotRuleParamRepository ruleParamRepository;
 
+
     @Nonnull
     @Override
     public RuleStrategy getStrategy() {
@@ -34,13 +34,13 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
 
     @Nullable
     @Override
-    public JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
+    public JackpotReward reward(@Nonnull JackpotRule rule, @Nonnull JackpotContribution contribution) {
         VariableRule ruleParams = VariableRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
 
-        BigDecimal currentPool = jackpot.currentPoolAmount();
-        BigDecimal triggerPool = ruleParams.triggerPool();
-        BigDecimal increaseRate = ruleParams.increaseRate();
-        BigDecimal maxChance = ruleParams.maxChance();
+        var currentPool = contribution.jackpotPoolAfter();
+        var triggerPool = ruleParams.triggerPool();
+        var increaseRate = ruleParams.increaseRate();
+        var maxChance = ruleParams.maxChance();
 
         BigDecimal chance;
 
@@ -59,9 +59,9 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
 
         return new JackpotReward(
                 null,
-                bet.id(),
-                bet.userId(),
-                jackpot.id(),
+                contribution.betId(),
+                contribution.userId(),
+                contribution.jackpotId(),
                 currentPool,
                 clock.instant()
         );
@@ -79,5 +79,4 @@ public class VariableJackpotRuleRewarder implements JackpotRuleRewarder {
             );
         }
     }
-
 }

@@ -39,7 +39,7 @@ class VariableRuleContributorTest {
     void shouldCalculateContribution_withinRateBounds() {
         when(clock.instant()).thenReturn(now);
 
-        var jackpot = new Jackpot(1L, "Mega", BigDecimal.TEN, new BigDecimal("3000.00"), 2L, 4L, now, now);
+        var jackpot = new Jackpot(1L, "Mega", BigDecimal.TEN, new BigDecimal("3000.00"), 2L, 4L, now, 1);
         var rule = new JackpotRule(2L, JackpotRuleType.CONTRIBUTION, RuleStrategy.VARIABLE, "Variable Rate", now);
         var bet = new Bet(1L, 1L, 1L, false, new BigDecimal("100.00"), now);
 
@@ -66,7 +66,7 @@ class VariableRuleContributorTest {
     void shouldUseMinRate_whenDropTooBig() {
         when(clock.instant()).thenReturn(now);
 
-        var jackpot = new Jackpot(1L, "Mini", BigDecimal.TEN, new BigDecimal("10000.00"), 2L, 4L, now, now);
+        var jackpot = new Jackpot(1L, "Mini", BigDecimal.TEN, new BigDecimal("10000.00"), 2L, 4L, now, 1);
         var rule = new JackpotRule(2L, JackpotRuleType.CONTRIBUTION, RuleStrategy.VARIABLE, "Rate Floor", now);
         Bet bet = new Bet(1L, 1L, 1L, false, new BigDecimal("50.00"), now);
 
@@ -87,7 +87,7 @@ class VariableRuleContributorTest {
 
     @Test
     void shouldThrow_whenParameterMissing() {
-        var jackpot = new Jackpot(1L, "Broken", BigDecimal.TEN, new BigDecimal("500.00"), 2L, 4L, now, now);
+        var jackpot = new Jackpot(1L, "Broken", BigDecimal.TEN, new BigDecimal("500.00"), 2L, 4L, now, 1);
         var rule = new JackpotRule(2L, JackpotRuleType.CONTRIBUTION, RuleStrategy.VARIABLE, "Incomplete", now);
         var bet = new Bet(1L, 1L, 1L, false, new BigDecimal("200.00"), now);
 

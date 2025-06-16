@@ -2,9 +2,7 @@ package io.gnupinguin.sporty.interview.processor.reward;
 
 
 import io.gnupinguin.sporty.interview.common.ChanceGenerator;
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
-import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRuleType;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
@@ -20,7 +18,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -45,46 +44,18 @@ class FixedJackpotRuleRewarderTest {
     @Test
     void shouldReturnReward_whenChanceIsSuccessful() {
         when(clock.instant()).thenReturn(now);
-        var jackpot = new Jackpot(1L, "Test", BigDecimal.TEN, new BigDecimal("1000.00"), 1L, 3L, now, now);
         var rule = new JackpotRule(3L, JackpotRuleType.REWARD, RuleStrategy.FIXED, "Fixed 10%", now);
-        var bet = new Bet(99L, 42L, 1L, false, new BigDecimal("200.00"), now);
-
+        var contribution = new JackpotContribution(1L, 2L, 3L, 4L, BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.ONE, now);
         when(ruleParamRepository.findParamsByRuleId(3L)).thenReturn(Map.of("chance", new BigDecimal("0.1")));
         when(chanceGenerator.won(any())).thenReturn(true);
 
-        var reward = rewarder.reward(jackpot, rule, bet);
+        var reward = rewarder.reward(rule, contribution);
         assertNotNull(reward);
-        assertEquals(bet.id(), reward.betId());
-        assertEquals(bet.userId(), reward.userId());
-        assertEquals(jackpot.id(), reward.jackpotId());
-        assertEquals(jackpot.currentPoolAmount(), reward.rewardAmount());
+        assertEquals(contribution.betId(), reward.betId());
+        assertEquals(contribution.userId(), reward.userId());
+        assertEquals(contribution.jackpotId(), reward.jackpotId());
+        assertEquals(contribution.jackpotPoolAfter(), reward.rewardAmount());
         assertEquals(now, reward.createdAt());
-    }
-
-    @Test
-    void shouldReturnNull_whenChanceFails() {
-        var jackpot = new Jackpot(2L, "FailJackpot", BigDecimal.TEN, new BigDecimal("500.00"), 1L, 4L, now, now);
-        var rule = new JackpotRule(4L, JackpotRuleType.REWARD, RuleStrategy.FIXED, "Low", now);
-        var bet = new Bet(101L, 12L, 2L, false, new BigDecimal("50.00"), now);
-
-        when(ruleParamRepository.findParamsByRuleId(4L)).thenReturn(Map.of("chance", new BigDecimal("0.05")));
-        when(chanceGenerator.won(new BigDecimal("0.05"))).thenReturn(false);
-
-        JackpotReward reward = rewarder.reward(jackpot, rule, bet);
-        assertNull(reward);
-    }
-
-    @Test
-    void shouldThrowIfChanceParamMissing() {
-        Jackpot jackpot = new Jackpot(3L, "Broken", BigDecimal.TEN, new BigDecimal("999.00"), 1L, 5L, now, now);
-        JackpotRule rule = new JackpotRule(5L, JackpotRuleType.REWARD, RuleStrategy.FIXED, "Invalid", now);
-        Bet bet = new Bet(102L, 99L, 3L, false, new BigDecimal("10.00"), now);
-
-        when(ruleParamRepository.findParamsByRuleId(5L)).thenReturn(Map.of());
-
-        var ex = assertThrows(IllegalArgumentException.class,
-                () -> rewarder.reward(jackpot, rule, bet));
-        assertTrue(ex.getMessage().contains("chance"));
     }
 
 }

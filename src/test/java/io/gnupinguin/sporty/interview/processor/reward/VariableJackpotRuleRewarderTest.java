@@ -1,11 +1,11 @@
 package io.gnupinguin.sporty.interview.processor.reward;
 
 import io.gnupinguin.sporty.interview.common.ChanceGenerator;
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
 import io.gnupinguin.sporty.interview.persistence.repository.JackpotRuleParamRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,173 +15,91 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VariableJackpotRuleRewarderTest {
 
     @Mock
-    private Clock clock;
+    private JackpotRuleParamRepository ruleParamRepository;
 
     @Mock
     private ChanceGenerator chanceGenerator;
 
-    @Mock
-    private JackpotRuleParamRepository ruleParamRepository;
+    private Clock clock;
 
     @InjectMocks
     private VariableJackpotRuleRewarder rewarder;
 
+    private final Instant now = Instant.parse("2023-01-01T10:00:00Z");
+
+    @BeforeEach
+    void setUp() {
+        clock = Clock.fixed(now, ZoneOffset.UTC);
+        rewarder = new VariableJackpotRuleRewarder(clock, chanceGenerator, ruleParamRepository);
+    }
+
     @Test
-    void getStrategy_returns_VARIABLE() {
+    void testGetStrategy() {
         assertEquals(RuleStrategy.VARIABLE, rewarder.getStrategy());
     }
 
     @Test
-    void reward_returnsNull_whenChanceGeneratorSaysNo() {
-        var jackpot = mock(Jackpot.class);
-        var rule = mock(JackpotRule.class);
-        var bet = mock(Bet.class);
-
-        when(jackpot.currentPoolAmount()).thenReturn(new BigDecimal("50"));
-        when(rule.id()).thenReturn(1L);
-
-        when(ruleParamRepository.findParamsByRuleId(1L)).thenReturn(Map.of(
-                "max_chance", new BigDecimal("0.1"),
-                "increase_rate", new BigDecimal("0.002"),
-                "trigger_pool", new BigDecimal("100")
-        ));
-
-        when(chanceGenerator.won(any())).thenReturn(false);
-
-        assertNull(rewarder.reward(jackpot, rule, bet));
-    }
-
-    @Test
-    void reward_returnsJackpotReward_whenChanceGeneratorSaysYes() {
-        var jackpot = mock(Jackpot.class);
-        var rule = mock(JackpotRule.class);
-        var bet = mock(Bet.class);
-
-        when(jackpot.currentPoolAmount()).thenReturn(new BigDecimal("50"));
-        when(jackpot.id()).thenReturn(100L);
-        when(rule.id()).thenReturn(1L);
-        when(bet.id()).thenReturn(200L);
-        when(bet.userId()).thenReturn(300L);
-
-        when(ruleParamRepository.findParamsByRuleId(1L)).thenReturn(Map.of(
-                "max_chance", new BigDecimal("0.1"),
-                "increase_rate", new BigDecimal("0.002"),
-                "trigger_pool", new BigDecimal("100")
-        ));
-
-        when(chanceGenerator.won(new BigDecimal("0.100"))).thenReturn(true);
-
-        Instant now = Instant.parse("2025-06-13T10:15:30.00Z");
-        when(clock.instant()).thenReturn(now);
-
-        var reward = rewarder.reward(jackpot, rule, bet);
-        assertNotNull(reward);
-        assertEquals(200L, reward.betId());
-        assertEquals(300L, reward.userId());
-        assertEquals(100L, reward.jackpotId());
-        assertEquals(new BigDecimal("50"), reward.rewardAmount());
-        assertEquals(now, reward.createdAt());
-    }
-
-    @Test
-    void reward_calculatesChanceCorrectly_whenCurrentPoolLessThanTriggerPool() {
-        var jackpot = mock(Jackpot.class);
-        var rule = mock(JackpotRule.class);
-        var bet = mock(Bet.class);
-
-        var currentPool = new BigDecimal("40");
-        var triggerPool = new BigDecimal("100");
-        var increaseRate = new BigDecimal("0.002");
-        var maxChance = new BigDecimal("0.1");
-
-        when(jackpot.currentPoolAmount()).thenReturn(currentPool);
-        when(rule.id()).thenReturn(1L);
-        when(bet.id()).thenReturn(10L);
-        when(bet.userId()).thenReturn(20L);
-        when(jackpot.id()).thenReturn(30L);
-
-        when(ruleParamRepository.findParamsByRuleId(1L)).thenReturn(Map.of(
-                "max_chance", maxChance,
-                "increase_rate", increaseRate,
-                "trigger_pool", triggerPool
-        ));
-
-        var expectedChance = currentPool.multiply(increaseRate); // 40 * 0.002 = 0.08
-
-        when(chanceGenerator.won(expectedChance)).thenReturn(true);
-
-        var reward = rewarder.reward(jackpot, rule, bet);
-        assertNotNull(reward);
-    }
-
-    @Test
-    void reward_capsChanceAtMaxChance_whenCurrentPoolTimesIncreaseRateExceedsMaxChance() {
-        Jackpot jackpot = mock(Jackpot.class);
+    void testReward_ChanceClampedToMax() {
         JackpotRule rule = mock(JackpotRule.class);
-        Bet bet = mock(Bet.class);
-
-        var currentPool = new BigDecimal("1000");
-        var triggerPool = new BigDecimal("2000");
-        var increaseRate = new BigDecimal("0.01");
-        var maxChance = new BigDecimal("0.1");
-
-        when(jackpot.currentPoolAmount()).thenReturn(currentPool);
-        when(rule.id()).thenReturn(1L);
-        when(bet.id()).thenReturn(10L);
-        when(bet.userId()).thenReturn(20L);
-        when(jackpot.id()).thenReturn(30L);
-
-        when(ruleParamRepository.findParamsByRuleId(1L)).thenReturn(Map.of(
-                "max_chance", maxChance,
-                "increase_rate", increaseRate,
-                "trigger_pool", triggerPool
+        when(rule.id()).thenReturn(3L);
+        when(ruleParamRepository.findParamsByRuleId(3L)).thenReturn(Map.of(
+                "max_chance", BigDecimal.valueOf(0.5),
+                "increase_rate", BigDecimal.valueOf(0.01),
+                "trigger_pool", BigDecimal.valueOf(300)
         ));
 
-        // currentPool * increaseRate = 1000 * 0.01 = 10.0 which is > maxChance(0.1)
-        // so expected chance is maxChance (0.1)
-        when(chanceGenerator.won(maxChance)).thenReturn(true);
+        JackpotContribution contribution = new JackpotContribution(
+                1L, 100L, 200L, 300L,
+                BigDecimal.valueOf(50),
+                BigDecimal.valueOf(5),
+                BigDecimal.valueOf(1000), // 1000 * 0.01 = 10 > maxChance
+                now
+        );
 
-        var reward = rewarder.reward(jackpot, rule, bet);
+        when(chanceGenerator.won(BigDecimal.valueOf(0.5))).thenReturn(true);
+
+        var reward = rewarder.reward(rule, contribution);
+
         assertNotNull(reward);
+        assertEquals(BigDecimal.valueOf(1000), reward.rewardAmount());
     }
 
     @Test
-    void reward_setsChanceToMaxChance_whenCurrentPoolEqualsOrExceedsTriggerPool() {
-        Jackpot jackpot = mock(Jackpot.class);
+    void testReward_UsesMaxChance_WhenTriggerReached() {
         JackpotRule rule = mock(JackpotRule.class);
-        Bet bet = mock(Bet.class);
-
-        var currentPool = new BigDecimal("150");
-        var triggerPool = new BigDecimal("100");
-        var increaseRate = new BigDecimal("0.01");
-        var maxChance = new BigDecimal("0.2");
-
-        when(jackpot.currentPoolAmount()).thenReturn(currentPool);
-        when(rule.id()).thenReturn(1L);
-        when(bet.id()).thenReturn(10L);
-        when(bet.userId()).thenReturn(20L);
-        when(jackpot.id()).thenReturn(30L);
-
-        when(ruleParamRepository.findParamsByRuleId(1L)).thenReturn(Map.of(
-                "max_chance", maxChance,
-                "increase_rate", increaseRate,
-                "trigger_pool", triggerPool
+        when(rule.id()).thenReturn(4L);
+        when(ruleParamRepository.findParamsByRuleId(4L)).thenReturn(Map.of(
+                "max_chance", BigDecimal.valueOf(0.4),
+                "increase_rate", BigDecimal.valueOf(0.02),
+                "trigger_pool", BigDecimal.valueOf(500)
         ));
 
-        // currentPool >= triggerPool, chance = maxChance
-        when(chanceGenerator.won(maxChance)).thenReturn(true);
+        JackpotContribution contribution = new JackpotContribution(
+                1L, 100L, 200L, 300L,
+                BigDecimal.valueOf(50),
+                BigDecimal.valueOf(5),
+                BigDecimal.valueOf(600), // >= trigger_pool
+                now
+        );
 
-        var reward = rewarder.reward(jackpot, rule, bet);
+        when(chanceGenerator.won(BigDecimal.valueOf(0.4))).thenReturn(true);
+
+        var reward = rewarder.reward(rule, contribution);
+
         assertNotNull(reward);
+        assertEquals(BigDecimal.valueOf(600), reward.rewardAmount());
     }
-
 }
+

@@ -1,8 +1,7 @@
 package io.gnupinguin.sporty.interview.processor.reward;
 
 import io.gnupinguin.sporty.interview.common.ChanceGenerator;
-import io.gnupinguin.sporty.interview.persistence.model.Bet;
-import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
 import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.rule.JackpotRule;
 import io.gnupinguin.sporty.interview.persistence.model.rule.RuleStrategy;
@@ -34,21 +33,19 @@ public class FixedJackpotRuleRewarder implements JackpotRuleRewarder {
 
     @Nullable
     @Override
-    public JackpotReward reward(@Nonnull Jackpot jackpot, @Nonnull JackpotRule rule, @Nonnull Bet bet) {
+    public JackpotReward reward(@Nonnull JackpotRule rule, @Nonnull JackpotContribution contribution) {
         var fixedRule = FixedRule.fromParams(ruleParamRepository.findParamsByRuleId(rule.id()));
 
         if (!chanceGenerator.won(fixedRule.chance)) {
             return null;
         }
 
-        BigDecimal rewardAmount = jackpot.currentPoolAmount();
-
         return new JackpotReward(
                 null, // ID (to be generated)
-                bet.id(),
-                bet.userId(),
-                jackpot.id(),
-                rewardAmount,
+                contribution.betId(),
+                contribution.userId(),
+                contribution.jackpotId(),
+                contribution.jackpotPoolAfter(),
                 clock.instant()
         );
     }

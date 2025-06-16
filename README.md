@@ -44,7 +44,7 @@ The bet processing flow is as follows:
    - Checks if a reward can be issued based on the jackpot's reward rule.
    - If a reward can be issued, it persists a record of the reward and resets the jackpot pool.
    - After all, a bet is marked as processed.
-3. **Check Reward**: User can check if the bet won a reward via `/bet/{betId}/reward` endpoint.
+3. **Check Reward**: User can check if the bet won a reward via `/bet/check-reward` endpoint.
    - If the bet hadn't been processed yet, it returns `NotProcessed` status.
 
 ### Jackpot Contribution Logic
@@ -86,15 +86,10 @@ The bet processing flow is as follows:
 
 ## Architecture Notes
 
-### Processing
-
-Thanks to Kafka partitioning guarantee, we can ensure that all bets for a specific jackpot are processed in order, which is crucial for maintaining the integrity of the jackpot pool and reward issuance. 
-This is achieved by using the jackpot ID as the partition key when sending messages to Kafka. For ensuring sequential processing, the bets also are ordered by `jackpotId` on the node. It allows to gurantee that all bets for a specific jackpot are processed in the order they were placed. 
-Moreover, the bets are processed in a single thread, which allows don't care about concurrent modifications of the jackpot pool. See `BetEventListener` for details.
-
-### Database
-
-Contribution and reward rules are fetched from the database to allow dynamic configuration.
+- place bet is a partially synchronous operation, as it processes the bet immediately but contributes to the jackpot and issues a reward asynchronously via Kafka.
+- Thanks to asynchronous processing via Kafka, the system can handle high loads without blocking the main thread.
+- Contribution and reward rules are fetched from the database to allow dynamic configuration.
+- Optimistic lock is used to ensure atomicity when updating the jackpot pool.
 
 ## Future Improvements
 It's a simplified version of the jackpot system, and it can be extended with more complex rules, user management, and error handling.

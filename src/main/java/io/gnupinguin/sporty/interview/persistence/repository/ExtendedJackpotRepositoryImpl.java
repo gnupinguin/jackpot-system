@@ -1,10 +1,17 @@
 package io.gnupinguin.sporty.interview.persistence.repository;
 
+import io.gnupinguin.sporty.interview.persistence.model.Jackpot;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotContribution;
+import io.gnupinguin.sporty.interview.persistence.model.JackpotReward;
 import io.gnupinguin.sporty.interview.persistence.model.RewardedBet;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +23,67 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ExtendedJackpotRepositoryImpl implements ExtendedJackpotRepository {
 
+    private final JackpotRepository repository;
     private final JdbcTemplate jdbcTemplate;
+
+    @Override
+    @Transactional
+    public Optional<Jackpot> findForUpdate(long id) {
+        return Optional.ofNullable(findByIdForUpdate(id));
+    }
+
+    @Nonnull
+    @Override
+    @Transactional
+    public Jackpot update(@Nonnull Jackpot jackpot) {
+        return repository.save(jackpot);
+    }
+
+    @Transactional
+    @Override
+    public boolean incrementPool(@Nonnull JackpotContribution contribution, long version) {
+        String sql = """
+                   UPDATE "jackpot"
+                   SET current_pool_amount = current_pool_amount + ?
+                   WHERE id = ? AND version = ?
+                """;
+        int updatedRows = jdbcTemplate.update(sql, contribution.contributionAmount(), contribution.jackpotId(), version);
+        if (updatedRows == 0) {
+            log.warn("No jackpot found with ID: {} for incrementing pool amount by {}", contribution.jackpotId(), contribution.contributionAmount());
+            return false;
+        }
+        return true;
+    }
+
+    @Transactional
+    @Override
+    public boolean resetJackpot(@Nonnull JackpotReward reward, long currentVersion) {
+        String sql = """
+                   UPDATE "jackpot"
+                   SET current_pool_amount = initial_pool_amount + current_pool_amount - ?,
+                       version = version + 1
+                   WHERE id = ? AND version = ?
+                """;
+        int updatedRows = jdbcTemplate.update(sql, reward.rewardAmount(), reward.jackpotId(), currentVersion);
+        if (updatedRows == 0) {
+            log.warn("No jackpot found with ID: {} for resetting pool amount", reward.jackpotId());
+            return false;
+        }
+        return true;
+    }
+
+    private static RowMapper<Jackpot> getJackpotRowMapper() {
+        return (rs, rowNum) -> new Jackpot(
+                rs.getLong("id"),
+                rs.getString("name"),
+                rs.getBigDecimal("initial_pool_amount"),
+                rs.getBigDecimal("current_pool_amount"),
+                rs.getLong("contribution_rule_id"),
+                rs.getLong("reward_rule_id"),
+                rs.getTimestamp("created_at").toInstant(),
+                rs.getLong("version")
+        );
+    }
 
     @Override
     public Optional<RewardedBet> findRewardedBetByBetId(long betId) {
@@ -43,6 +110,23 @@ public class ExtendedJackpotRepositoryImpl implements ExtendedJackpotRepository 
     private static Instant getRewardedAt(ResultSet rs) throws SQLException {
         var rewardedAt = rs.getTimestamp("rewarded_at");
         return rewardedAt == null ? null : rewardedAt.toInstant();
+    }
+
+    @Nullable
+    private Jackpot findByIdForUpdate(long id) {
+        String sql = """
+                  SELECT id, name, initial_pool_amount, current_pool_amount,
+                     contribution_rule_id, reward_rule_id, created_at, updated_at
+                  FROM "jackpot"
+                  WHERE id = ?
+                  FOR UPDATE
+                """;
+
+        return jdbcTemplate.queryForObject(sql, jackpotRowMapper(), id);
+    }
+
+    private RowMapper<Jackpot> jackpotRowMapper() {
+        return getJackpotRowMapper();
     }
 
 }
